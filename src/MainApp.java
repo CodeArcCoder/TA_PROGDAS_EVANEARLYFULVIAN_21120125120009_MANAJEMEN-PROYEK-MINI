@@ -1,16 +1,15 @@
-import javax.swing.*; // [Modul 8] GUI Programming
+import java.awt.*; // [Modul 8] GUI Programming
+import java.awt.event.*;
+import java.awt.geom.RoundRectangle2D;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.*;
 import javax.swing.border.*;
-import javax.swing.table.*;
 import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
-import javax.swing.text.JTextComponent;
-import java.awt.*;
-import java.awt.event.*;
-import java.awt.geom.RoundRectangle2D;
-import java.util.ArrayList; // [Modul 1] Variabel & Tipe Data (Penggunaan List Dinamis)
-import java.util.List;
+import javax.swing.table.*; // [Modul 1] Variabel & Tipe Data (Penggunaan List Dinamis)
 
 // --- Model Data (Compact) ---
 
