@@ -1,6 +1,8 @@
-import java.awt.*; // [Modul 8] GUI Programming
+import java.awt.*;
 import java.awt.event.*;
 import java.awt.geom.RoundRectangle2D;
+import java.io.ObjectInputStream;
+import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 import javax.swing.*;
@@ -9,13 +11,14 @@ import javax.swing.plaf.basic.BasicArrowButton;
 import javax.swing.plaf.basic.BasicComboBoxUI;
 import javax.swing.plaf.basic.BasicComboPopup;
 import javax.swing.plaf.basic.ComboPopup;
-import javax.swing.table.*; // [Modul 1] Variabel & Tipe Data (Penggunaan List Dinamis)
+import javax.swing.table.*;
+import java.io.Serializable; // Import untuk fitur persistensi data
 
 // --- Model Data (Compact) ---
 
 // [Modul 5] OOP 1: Class (Blueprint Objek)
-class Project {
-    protected String name, deadline, status; // [Modul 1] Variabel & Tipe Data
+class Project implements Serializable { // Ditandai sebagai Serializable
+    protected String name, deadline, status;
 
     // [Modul 5] OOP 1: Constructor
     public Project(String n, String d, String s) {
@@ -71,11 +74,19 @@ public class MainApp extends JFrame {
     private final List<Integer> visibleIndexes = new ArrayList<>();
     private int selectedProjectIndex = -1;
 
+    // Nama file untuk penyimpanan data
+    private final String DATA_FILE = "project_data.ser";
+
     // [Modul 5] OOP 1: Constructor
     public MainApp() {
         try { UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName()); } catch (Exception ignore) {}
         setTitle("Project Manajemen Proyek Mini");
-        setSize(1000, 800); setLocationRelativeTo(null); setDefaultCloseOperation(EXIT_ON_CLOSE); // [Modul 8] GUI Programming
+        setSize(1000, 800); setLocationRelativeTo(null);
+
+        // Atur agar tidak langsung keluar, kita perlu event penutupan
+        setDefaultCloseOperation(DO_NOTHING_ON_CLOSE);
+
+        loadProjects(); // <-- MEMUAT DATA SAAT APLIKASI DIMULAI
 
         JPanel mainPanel = new JPanel(new BorderLayout());
         mainPanel.setBackground(C_BG);
@@ -92,7 +103,43 @@ public class MainApp extends JFrame {
         setContentPane(mainPanel);
         updateTableFiltered();
         setupListeners(mainPanel, headerPanel, contentPanel, formContainer);
+
+        // [Modul 8] Event Handling: Tambahkan listener untuk menutup jendela (Menyimpan data)
+        addWindowListener(new WindowAdapter() {
+            @Override
+            public void windowClosing(WindowEvent e) {
+                saveProjects(); // <-- MENYIMPAN DATA SEBELUM KELUAR
+                dispose();
+                System.exit(0);
+            }
+        });
+
         setVisible(true);
+    }
+
+    // [Modul 7] Input/Output (I/O): Menyimpan objek List ke file
+    private void saveProjects() {
+        try (ObjectOutputStream oos = new ObjectOutputStream(new java.io.FileOutputStream(DATA_FILE))) {
+            oos.writeObject(projectList);
+            System.out.println("Data proyek berhasil disimpan.");
+        } catch (java.io.IOException e) {
+            System.err.println("Gagal menyimpan data: " + e.getMessage());
+        }
+    }
+
+    // [Modul 7] Input/Output (I/O): Memuat objek List dari file
+    private void loadProjects() {
+        try (ObjectInputStream ois = new ObjectInputStream(new java.io.FileInputStream(DATA_FILE))) {
+            // [Modul 6] OOP 2: Casting (Type Casting dari Object ke ArrayList)
+            @SuppressWarnings("unchecked")
+            ArrayList<Project> loadedList = (ArrayList<Project>) ois.readObject();
+            projectList.addAll(loadedList);
+            System.out.println("Data proyek berhasil dimuat.");
+        } catch (java.io.FileNotFoundException e) {
+            System.out.println("File data belum ditemukan, memulai dengan data kosong.");
+        } catch (java.io.IOException | ClassNotFoundException e) {
+            System.err.println("Gagal memuat data: " + e.getMessage());
+        }
     }
 
     // --- Komponen Kustom Inner Class ---
